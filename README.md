@@ -1,5 +1,10 @@
-####Sistema De Moeda Estudantil
+# Sistema De Moeda Estudantil
 
-Desenvolvimento de um sistema para estimular o reconhecimento do mérito estudantil através de uma moeda virtual. Essa moeda pode ser distribuída por professores aos seus alunos e trocada pelos alunos por produtos e descontos em empresas parceiras
+## Descrição
 
-Alunos: Tiago Boaventura Amaral e Kayque Allan
+Desenvolvimento de um sistema para estimular o reconhecimento do mérito estudantil através de uma moeda virtual. Essa moeda pode ser distribuída por professores aos seus alunos e trocada pelos alunos por produtos e descontos em empresas parceiras.
+
+## Alunos
+
+- Tiago Boaventura Amaral
+- Kayque Allan Ribeiro Freitas
