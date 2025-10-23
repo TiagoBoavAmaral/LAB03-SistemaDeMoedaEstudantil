@@ -11,13 +11,40 @@ Desenvolvimento de um sistema para estimular o reconhecimento do mérito estudan
 
 ## Backend (Sprint 02)
 
-Aplicação Spring Boot 3 (Java 17) com CRUD de Alunos, Empresas Parceiras e Instituições de Ensino usando Spring Data JPA e banco H2 em memória.
+Aplicação Spring Boot 3 (Java 17) com CRUD de Alunos, Empresas Parceiras e Instituições de Ensino usando Spring Data JPA e banco PostgreSQL.
 
 ### Pré-requisitos
 
 - Java 17 ou superior
 - Maven 3.9+
+- PostgreSQL 18 (ou superior)
 - IDE de sua preferência (IntelliJ IDEA, Eclipse, VS Code)
+
+### Configuração do Banco de Dados
+
+1. **Instale o PostgreSQL 18** (se ainda não instalou):
+
+   - Download: https://www.postgresql.org/download/windows/
+   - Durante a instalação, defina uma senha para o usuário `postgres`
+
+2. **Crie o banco de dados**:
+
+   **Opção A - Usando pgAdmin (Recomendado):**
+
+   - Abra o pgAdmin 4
+   - Conecte ao servidor PostgreSQL
+   - Clique com botão direito em "Databases" → "Create" → "Database"
+   - Nome: `moedaestudantil_db`
+
+   **Opção B - Usando linha de comando:**
+
+   ```bash
+   psql -U postgres -c "CREATE DATABASE moedaestudantil_db;"
+   ```
+
+3. **Configure as credenciais**:
+   - Edite o arquivo `src/main/resources/application.properties`
+   - Substitua `SUA_SENHA_AQUI` pela senha do seu usuário postgres
 
 ### Executar a Aplicação
 
@@ -28,27 +55,43 @@ git clone <url-do-repositorio>
 cd LAB03-SistemaDeMoedaEstudantil
 ```
 
-2. **Execute a aplicação**:
+2. **Certifique-se de que o PostgreSQL está rodando**:
+
+```bash
+# Verificar se o serviço está rodando
+Get-Service postgresql-x64-18
+
+# Se não estiver rodando, inicie:
+net start postgresql-x64-18
+```
+
+3. **Execute a aplicação**:
 
 ```bash
 mvn spring-boot:run
 ```
 
-3. **Acesse a aplicação**:
+4. **Acesse a aplicação**:
 
 - API disponível em: `http://localhost:8080`
-- H2 Console: `http://localhost:8080/h2-console`
 
-### Banco de Dados H2
+### Banco de Dados PostgreSQL
 
-O sistema utiliza o banco H2 em memória com as seguintes configurações:
+O sistema utiliza o banco PostgreSQL com as seguintes configurações:
 
-#### Configuração de Acesso ao H2 Console
+#### Configuração de Acesso
 
-- **URL**: `http://localhost:8080/h2-console`
-- **JDBC URL**: `jdbc:h2:mem:moedaestudantil`
-- **Username**: `sa`
-- **Password**: (deixe em branco)
+- **Host**: `localhost`
+- **Porta**: `5432`
+- **Database**: `moedaestudantil_db`
+- **Username**: `postgres`
+- **Password**: `[sua senha configurada]`
+
+#### Acessar via pgAdmin
+
+- Abra o pgAdmin 4
+- Conecte ao servidor PostgreSQL
+- Navegue até o banco `moedaestudantil_db`
 
 #### Estrutura do Banco de Dados
 
@@ -151,7 +194,7 @@ npm run dev
 
 - **Framework**: Spring Boot 3.3.3
 - **Java**: 17
-- **Banco de Dados**: H2 (em memória)
+- **Banco de Dados**: PostgreSQL 18
 - **ORM**: Spring Data JPA / Hibernate
 - **Validação**: Bean Validation
 - **Tratamento de Erros**: Global Exception Handler com `@ControllerAdvice`
@@ -165,7 +208,53 @@ npm run dev
 
 ### Observações Importantes
 
-- O banco H2 é em memória, então os dados são perdidos quando a aplicação é reiniciada
+- O banco PostgreSQL persiste os dados entre reinicializações da aplicação
 - O sistema carrega automaticamente dados iniciais de instituições de ensino
 - Todas as validações são feitas tanto no frontend quanto no backend
 - O sistema suporta herança de entidades (Aluno e EmpresaParceira herdam de Usuario)
+- Certifique-se de que o PostgreSQL esteja rodando antes de executar a aplicação
+
+## Troubleshooting
+
+### Problemas Comuns
+
+#### Erro de Conexão com PostgreSQL
+
+```
+Connection refused: connect
+```
+
+**Solução:**
+
+1. Verifique se o PostgreSQL está rodando: `Get-Service postgresql-x64-18`
+2. Se não estiver, inicie: `net start postgresql-x64-18`
+3. Verifique se a porta 5432 está livre
+
+#### Erro de Autenticação
+
+```
+FATAL: password authentication failed for user "postgres"
+```
+
+**Solução:**
+
+1. Verifique a senha no arquivo `application.properties`
+2. Use o pgAdmin para redefinir a senha se necessário
+3. Certifique-se de que o banco `moedaestudantil_db` existe
+
+#### Banco de Dados Não Existe
+
+```
+database "moedaestudantil_db" does not exist
+```
+
+**Solução:**
+
+1. Crie o banco usando pgAdmin ou linha de comando
+2. Verifique se o nome está correto no `application.properties`
+
+### Scripts Úteis
+
+- `setup_database.bat` - Script para criar o banco de dados
+- `reset_postgres_password.ps1` - Script para redefinir senha do PostgreSQL
+- `create_database_manual.bat` - Script alternativo para criar banco
