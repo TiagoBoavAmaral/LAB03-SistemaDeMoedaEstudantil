@@ -45,6 +45,11 @@ export type EmpresaRequest = {
   cnpj: string;
 };
 
+export type InstituicaoEnsino = {
+  id: number;
+  nome: string;
+};
+
 export const AlunosApi = {
   list: async (): Promise<Aluno[]> => (await api.get("/api/alunos")).data,
   get: async (id: number): Promise<Aluno> =>
@@ -69,4 +74,9 @@ export const EmpresasApi = {
   remove: async (id: number): Promise<void> => {
     await api.delete(`/api/empresas/${id}`);
   },
+};
+
+export const InstituicoesApi = {
+  list: async (): Promise<InstituicaoEnsino[]> =>
+    (await api.get("/api/instituicoes")).data,
 };

@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
-import { AlunosApi, Aluno, AlunoRequest } from "../api/client";
+import {
+  AlunosApi,
+  Aluno,
+  AlunoRequest,
+  InstituicoesApi,
+  InstituicaoEnsino,
+} from "../api/client";
 
 export function AlunosPage() {
   const [alunos, setAlunos] = useState<Aluno[]>([]);
+  const [instituicoes, setInstituicoes] = useState<InstituicaoEnsino[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,7 +21,7 @@ export function AlunosPage() {
     rg: "",
     endereco: "",
     curso: "",
-    instituicaoEnsinoId: 1,
+    instituicaoEnsinoId: 0,
   });
 
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -22,10 +29,15 @@ export function AlunosPage() {
   const load = async () => {
     setLoading(true);
     try {
-      setAlunos(await AlunosApi.list());
+      const [alunosData, instituicoesData] = await Promise.all([
+        AlunosApi.list(),
+        InstituicoesApi.list(),
+      ]);
+      setAlunos(alunosData);
+      setInstituicoes(instituicoesData);
       setError(null);
     } catch (e: any) {
-      setError(e?.response?.data?.error || "Erro ao carregar alunos");
+      setError(e?.response?.data?.error || "Erro ao carregar dados");
     } finally {
       setLoading(false);
     }
@@ -51,7 +63,7 @@ export function AlunosPage() {
         rg: "",
         endereco: "",
         curso: "",
-        instituicaoEnsinoId: 1,
+        instituicaoEnsinoId: 0,
       });
       setEditingId(null);
       await load();
@@ -70,7 +82,7 @@ export function AlunosPage() {
       rg: a.rg,
       endereco: a.endereco,
       curso: a.curso,
-      instituicaoEnsinoId: a.instituicaoEnsinoId || 1,
+      instituicaoEnsinoId: a.instituicaoEnsinoId || 0,
     });
   };
 
@@ -134,15 +146,20 @@ export function AlunosPage() {
           onChange={(e) => setForm({ ...form, curso: e.target.value })}
           required
         />
-        <input
-          placeholder="InstituiçãoEnsinoId"
+        <select
           value={form.instituicaoEnsinoId}
           onChange={(e) =>
             setForm({ ...form, instituicaoEnsinoId: Number(e.target.value) })
           }
           required
-          type="number"
-        />
+        >
+          <option value="">Selecione uma instituição</option>
+          {instituicoes.map((inst) => (
+            <option key={inst.id} value={inst.id}>
+              {inst.nome}
+            </option>
+          ))}
+        </select>
         <div style={{ gridColumn: "1 / -1", display: "flex", gap: 8 }}>
           <button type="submit" className="btn">
             {editingId ? "Atualizar" : "Criar"}
@@ -160,7 +177,7 @@ export function AlunosPage() {
                   rg: "",
                   endereco: "",
                   curso: "",
-                  instituicaoEnsinoId: 1,
+                  instituicaoEnsinoId: 0,
                 });
               }}
               className="btn secondary"
@@ -178,6 +195,7 @@ export function AlunosPage() {
             <th>Email</th>
             <th>CPF</th>
             <th>Curso</th>
+            <th>Instituição</th>
             <th>Saldo</th>
             <th></th>
           </tr>
@@ -189,6 +207,7 @@ export function AlunosPage() {
               <td>{a.email}</td>
               <td>{a.cpf}</td>
               <td>{a.curso}</td>
+              <td>{a.instituicaoEnsinoNome || "N/A"}</td>
               <td>{a.saldoMoedas}</td>
               <td>
                 <div className="toolbar">

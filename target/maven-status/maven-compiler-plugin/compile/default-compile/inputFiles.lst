@@ -1,6 +1,7 @@
 C:\Users\fofam\OneDrive\Documentos\Faculdade\LAB03-SistemaDeMoedaEstudantil\src\main\java\com\moedaestudantil\api\config\WebConfig.java
 C:\Users\fofam\OneDrive\Documentos\Faculdade\LAB03-SistemaDeMoedaEstudantil\src\main\java\com\moedaestudantil\api\controller\AlunoController.java
 C:\Users\fofam\OneDrive\Documentos\Faculdade\LAB03-SistemaDeMoedaEstudantil\src\main\java\com\moedaestudantil\api\controller\EmpresaParceiraController.java
+C:\Users\fofam\OneDrive\Documentos\Faculdade\LAB03-SistemaDeMoedaEstudantil\src\main\java\com\moedaestudantil\api\controller\InstituicaoEnsinoController.java
 C:\Users\fofam\OneDrive\Documentos\Faculdade\LAB03-SistemaDeMoedaEstudantil\src\main\java\com\moedaestudantil\api\exception\GlobalExceptionHandler.java
 C:\Users\fofam\OneDrive\Documentos\Faculdade\LAB03-SistemaDeMoedaEstudantil\src\main\java\com\moedaestudantil\api\exception\ResourceNotFoundException.java
 C:\Users\fofam\OneDrive\Documentos\Faculdade\LAB03-SistemaDeMoedaEstudantil\src\main\java\com\moedaestudantil\application\dto\AlunoRequestDTO.java

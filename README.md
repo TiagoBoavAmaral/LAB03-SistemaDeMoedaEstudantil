@@ -11,56 +11,161 @@ Desenvolvimento de um sistema para estimular o reconhecimento do mérito estudan
 
 ## Backend (Sprint 02)
 
-Aplicação Spring Boot 3 (Java 17) com CRUD de Alunos e Empresas Parceiras usando Spring Data JPA e banco H2.
+Aplicação Spring Boot 3 (Java 17) com CRUD de Alunos, Empresas Parceiras e Instituições de Ensino usando Spring Data JPA e banco H2 em memória.
 
-### Executar
+### Pré-requisitos
 
-1. Requisitos: Java 17, Maven 3.9+
-2. Comandos:
+- Java 17 ou superior
+- Maven 3.9+
+- IDE de sua preferência (IntelliJ IDEA, Eclipse, VS Code)
+
+### Executar a Aplicação
+
+1. **Clone o repositório** (se ainda não fez):
+
+```bash
+git clone <url-do-repositorio>
+cd LAB03-SistemaDeMoedaEstudantil
+```
+
+2. **Execute a aplicação**:
 
 ```bash
 mvn spring-boot:run
 ```
 
-API disponível em `http://localhost:8080`.
+3. **Acesse a aplicação**:
 
-### H2 Console
+- API disponível em: `http://localhost:8080`
+- H2 Console: `http://localhost:8080/h2-console`
 
-- Ativado em `http://localhost:8080/h2-console`
-- JDBC URL: `jdbc:h2:mem:moedaestudantil`
-- User: `sa` (sem senha)
+### Banco de Dados H2
 
-### Endpoints
+O sistema utiliza o banco H2 em memória com as seguintes configurações:
 
-- `POST /api/alunos`
-- `GET /api/alunos`
-- `GET /api/alunos/{id}`
-- `PUT /api/alunos/{id}`
-- `DELETE /api/alunos/{id}`
+#### Configuração de Acesso ao H2 Console
 
-- `POST /api/empresas`
-- `GET /api/empresas`
-- `GET /api/empresas/{id}`
-- `PUT /api/empresas/{id}`
-- `DELETE /api/empresas/{id}`
+- **URL**: `http://localhost:8080/h2-console`
+- **JDBC URL**: `jdbc:h2:mem:moedaestudantil`
+- **Username**: `sa`
+- **Password**: (deixe em branco)
+
+#### Estrutura do Banco de Dados
+
+**Tabela: `usuarios` (tabela base)**
+
+- `id` (BIGINT, PK, AUTO_INCREMENT)
+- `nome` (VARCHAR, NOT NULL)
+- `email` (VARCHAR, NOT NULL, UNIQUE)
+- `senha` (VARCHAR, NOT NULL)
+
+**Tabela: `alunos` (herda de usuarios)**
+
+- `id` (BIGINT, PK, FK para usuarios)
+- `cpf` (VARCHAR, NOT NULL, UNIQUE)
+- `rg` (VARCHAR, NOT NULL)
+- `endereco` (VARCHAR, NOT NULL)
+- `curso` (VARCHAR, NOT NULL)
+- `saldo_moedas` (DOUBLE, NOT NULL, DEFAULT 0.0)
+- `instituicao_ensino_id` (BIGINT, FK para instituicoes_ensino)
+
+**Tabela: `empresas_parceiras` (herda de usuarios)**
+
+- `id` (BIGINT, PK, FK para usuarios)
+- `cnpj` (VARCHAR, NOT NULL, UNIQUE)
+
+**Tabela: `instituicoes_ensino`**
+
+- `id` (BIGINT, PK, AUTO_INCREMENT)
+- `nome` (VARCHAR, NOT NULL)
+
+#### Dados Iniciais
+
+O sistema já vem com dados de exemplo carregados automaticamente:
+
+- 3 instituições de ensino pré-cadastradas (UFMG, PUC-MG, ITA)
+
+### Endpoints da API
+
+#### Alunos
+
+- `POST /api/alunos` - Criar novo aluno
+- `GET /api/alunos` - Listar todos os alunos
+- `GET /api/alunos/{id}` - Buscar aluno por ID
+- `PUT /api/alunos/{id}` - Atualizar aluno
+- `DELETE /api/alunos/{id}` - Deletar aluno
+
+#### Empresas Parceiras
+
+- `POST /api/empresas` - Criar nova empresa
+- `GET /api/empresas` - Listar todas as empresas
+- `GET /api/empresas/{id}` - Buscar empresa por ID
+- `PUT /api/empresas/{id}` - Atualizar empresa
+- `DELETE /api/empresas/{id}` - Deletar empresa
+
+#### Instituições de Ensino
+
+- `POST /api/instituicoes` - Criar nova instituição
+- `GET /api/instituicoes` - Listar todas as instituições
+- `GET /api/instituicoes/{id}` - Buscar instituição por ID
+- `PUT /api/instituicoes/{id}` - Atualizar instituição
+- `DELETE /api/instituicoes/{id}` - Deletar instituição
 
 ## Frontend
 
-Projeto React + Vite em `frontend/`.
+Projeto React + TypeScript + Vite localizado na pasta `frontend/`.
 
-### Rodando o frontend
+### Executar o Frontend
+
+1. **Navegue para a pasta do frontend**:
 
 ```bash
 cd frontend
+```
+
+2. **Instale as dependências**:
+
+```bash
 npm install
+```
+
+3. **Execute o servidor de desenvolvimento**:
+
+```bash
 npm run dev
 ```
 
-Aplicação em `http://localhost:5173`.
+4. **Acesse a aplicação**:
 
-Certifique-se de rodar o backend em `http://localhost:8080` (CORS habilitado para o frontend de dev).
+- Frontend disponível em: `http://localhost:5173`
 
-### Observações
+### Configuração
 
-- Validações com Bean Validation em DTOs de requisição
-- Tratamento global de erros com `@ControllerAdvice`
+- O frontend está configurado para se comunicar com o backend em `http://localhost:8080`
+- CORS está habilitado no backend para permitir requisições do frontend de desenvolvimento
+- Certifique-se de que o backend esteja rodando antes de acessar o frontend
+
+## Características Técnicas
+
+### Backend
+
+- **Framework**: Spring Boot 3.3.3
+- **Java**: 17
+- **Banco de Dados**: H2 (em memória)
+- **ORM**: Spring Data JPA / Hibernate
+- **Validação**: Bean Validation
+- **Tratamento de Erros**: Global Exception Handler com `@ControllerAdvice`
+
+### Frontend
+
+- **Framework**: React 18
+- **Linguagem**: TypeScript
+- **Build Tool**: Vite
+- **Styling**: CSS puro
+
+### Observações Importantes
+
+- O banco H2 é em memória, então os dados são perdidos quando a aplicação é reiniciada
+- O sistema carrega automaticamente dados iniciais de instituições de ensino
+- Todas as validações são feitas tanto no frontend quanto no backend
+- O sistema suporta herança de entidades (Aluno e EmpresaParceira herdam de Usuario)

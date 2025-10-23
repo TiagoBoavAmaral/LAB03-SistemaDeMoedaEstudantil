@@ -108,7 +108,8 @@ input:not([type]),
 input[type="text"],
 input[type="email"],
 input[type="password"],
-input[type="number"] {
+input[type="number"],
+select {
   width: 100%;
   padding: 10px 12px;
   border-radius: 10px;
@@ -117,7 +118,8 @@ input[type="number"] {
   color: var(--text);
   outline: none;
 }
-input:focus {
+input:focus,
+select:focus {
   border-color: rgba(99, 102, 241, 0.5);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
