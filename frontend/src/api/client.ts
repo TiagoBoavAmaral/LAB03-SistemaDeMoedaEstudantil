@@ -80,3 +80,42 @@ export const InstituicoesApi = {
   list: async (): Promise<InstituicaoEnsino[]> =>
     (await api.get("/api/instituicoes")).data,
 };
+
+export type EnvioMoedasRequest = {
+  professorNome: string;
+  alunoId: number;
+  valor: number;
+  descricao: string;
+};
+
+export type Transacao = {
+  id: number;
+  alunoId: number;
+  alunoNome: string;
+  valor: number;
+  tipo: string;
+  responsavelTipo: string;
+  responsavelNome: string;
+  descricao: string;
+  criadoEm: string;
+};
+
+export const MoedasApi = {
+  enviar: async (payload: EnvioMoedasRequest): Promise<Transacao> =>
+    (await api.post("/api/moedas/professores/envio", payload)).data,
+  extratoAluno: async (alunoId: number): Promise<Transacao[]> =>
+    (await api.get(`/api/moedas/alunos/${alunoId}/extrato`)).data,
+  extratoProfessor: async (professorNome: string): Promise<Transacao[]> =>
+    (
+      await api.get(`/api/moedas/professores/extrato`, {
+        params: { nome: professorNome },
+      })
+    ).data,
+};
+
+export type Professor = { id: number; nome: string };
+
+export const ProfessoresApi = {
+  list: async (): Promise<Professor[]> =>
+    (await api.get("/api/professores")).data,
+};

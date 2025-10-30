@@ -1,6 +1,8 @@
 import { Link, Route, Routes, Navigate } from "react-router-dom";
 import { AlunosPage } from "./pages/AlunosPage";
 import { EmpresasPage } from "./pages/EmpresasPage";
+import { MoedasPage } from "./pages/MoedasPage";
+import { ExtratosPage } from "./pages/ExtratosPage";
 
 export default function App() {
   return (
@@ -13,6 +15,8 @@ export default function App() {
         <nav className="nav">
           <Link to="/alunos">Alunos</Link>
           <Link to="/empresas">Empresas</Link>
+          <Link to="/moedas">Moedas</Link>
+          <Link to="/extratos">Extratos</Link>
         </nav>
       </header>
       <Routes>
@@ -30,6 +34,22 @@ export default function App() {
           element={
             <div className="card">
               <EmpresasPage />
+            </div>
+          }
+        />
+        <Route
+          path="/moedas"
+          element={
+            <div className="card">
+              <MoedasPage />
+            </div>
+          }
+        />
+        <Route
+          path="/extratos"
+          element={
+            <div className="card">
+              <ExtratosPage />
             </div>
           }
         />
