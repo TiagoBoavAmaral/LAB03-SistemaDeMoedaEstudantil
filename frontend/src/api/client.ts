@@ -119,3 +119,28 @@ export const ProfessoresApi = {
   list: async (): Promise<Professor[]> =>
     (await api.get("/api/professores")).data,
 };
+
+export type Vantagem = {
+  id: number;
+  nome: string;
+  descricao: string;
+  custoMoedas: number;
+  empresaParceiraId: number;
+  empresaParceiraNome: string;
+};
+
+export type VantagemRequest = {
+  nome: string;
+  descricao: string;
+  custoMoedas: number;
+  empresaParceiraId: number;
+};
+
+export const VantagensApi = {
+  list: async (): Promise<Vantagem[]> =>
+    (await api.get("/api/vantagens")).data,
+  get: async (id: number): Promise<Vantagem> =>
+    (await api.get(`/api/vantagens/${id}`)).data,
+  create: async (payload: VantagemRequest): Promise<Vantagem> =>
+    (await api.post("/api/vantagens", payload)).data,
+};
