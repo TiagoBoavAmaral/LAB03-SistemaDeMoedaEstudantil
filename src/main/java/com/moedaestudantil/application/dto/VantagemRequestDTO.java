@@ -16,6 +16,8 @@ public class VantagemRequestDTO {
     @Positive
     private Double custoMoedas;
 
+    private String imagemUrl;
+
     @NotNull
     private Long empresaParceiraId;
 
@@ -41,6 +43,14 @@ public class VantagemRequestDTO {
 
     public void setCustoMoedas(Double custoMoedas) {
         this.custoMoedas = custoMoedas;
+    }
+
+    public String getImagemUrl() {
+        return imagemUrl;
+    }
+
+    public void setImagemUrl(String imagemUrl) {
+        this.imagemUrl = imagemUrl;
     }
 
     public Long getEmpresaParceiraId() {

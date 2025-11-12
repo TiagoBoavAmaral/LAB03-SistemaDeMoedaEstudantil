@@ -4,6 +4,7 @@ import com.moedaestudantil.application.dto.VantagemRequestDTO;
 import com.moedaestudantil.application.dto.VantagemResponseDTO;
 import com.moedaestudantil.application.service.VantagemService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +35,17 @@ public class VantagemController {
     @GetMapping("/{id}")
     public ResponseEntity<VantagemResponseDTO> buscar(@PathVariable Long id) {
         return ResponseEntity.ok(service.buscarPorId(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<VantagemResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody VantagemRequestDTO dto) {
+        return ResponseEntity.ok(service.atualizar(id, dto));
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletar(@PathVariable Long id) {
+        service.deletar(id);
     }
 }
 

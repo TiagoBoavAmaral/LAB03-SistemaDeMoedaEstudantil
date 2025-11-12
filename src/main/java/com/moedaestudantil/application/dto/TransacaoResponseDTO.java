@@ -6,6 +6,7 @@ public class TransacaoResponseDTO {
     private Long id;
     private Long alunoId;
     private String alunoNome;
+    private String alunoEmail;
     private Double valor;
     private String tipo;
     private String responsavelTipo;
@@ -19,6 +20,8 @@ public class TransacaoResponseDTO {
     public void setAlunoId(Long alunoId) { this.alunoId = alunoId; }
     public String getAlunoNome() { return alunoNome; }
     public void setAlunoNome(String alunoNome) { this.alunoNome = alunoNome; }
+    public String getAlunoEmail() { return alunoEmail; }
+    public void setAlunoEmail(String alunoEmail) { this.alunoEmail = alunoEmail; }
     public Double getValor() { return valor; }
     public void setValor(Double valor) { this.valor = valor; }
     public String getTipo() { return tipo; }

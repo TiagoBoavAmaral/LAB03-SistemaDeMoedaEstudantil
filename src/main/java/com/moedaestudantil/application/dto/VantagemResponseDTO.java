@@ -5,6 +5,7 @@ public class VantagemResponseDTO {
     private String nome;
     private String descricao;
     private Double custoMoedas;
+    private String imagemUrl;
     private Long empresaParceiraId;
     private String empresaParceiraNome;
 
@@ -38,6 +39,14 @@ public class VantagemResponseDTO {
 
     public void setCustoMoedas(Double custoMoedas) {
         this.custoMoedas = custoMoedas;
+    }
+
+    public String getImagemUrl() {
+        return imagemUrl;
+    }
+
+    public void setImagemUrl(String imagemUrl) {
+        this.imagemUrl = imagemUrl;
     }
 
     public Long getEmpresaParceiraId() {

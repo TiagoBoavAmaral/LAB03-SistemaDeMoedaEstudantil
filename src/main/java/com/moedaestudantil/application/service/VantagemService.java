@@ -33,6 +33,7 @@ public class VantagemService {
         vantagem.setNome(dto.getNome());
         vantagem.setDescricao(dto.getDescricao());
         vantagem.setCustoMoedas(dto.getCustoMoedas());
+        vantagem.setImagemUrl(dto.getImagemUrl());
         vantagem.setEmpresaParceira(empresa);
 
         Vantagem salva = vantagemRepository.save(vantagem);
@@ -53,12 +54,38 @@ public class VantagemService {
         return toResponse(vantagem);
     }
 
+    @Transactional
+    public VantagemResponseDTO atualizar(Long id, VantagemRequestDTO dto) {
+        Vantagem vantagem = vantagemRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Vantagem não encontrada"));
+
+        EmpresaParceira empresa = empresaParceiraRepository.findById(dto.getEmpresaParceiraId())
+                .orElseThrow(() -> new ResourceNotFoundException("Empresa Parceira não encontrada"));
+
+        vantagem.setNome(dto.getNome());
+        vantagem.setDescricao(dto.getDescricao());
+        vantagem.setCustoMoedas(dto.getCustoMoedas());
+        vantagem.setImagemUrl(dto.getImagemUrl());
+        vantagem.setEmpresaParceira(empresa);
+
+        return toResponse(vantagemRepository.save(vantagem));
+    }
+
+    @Transactional
+    public void deletar(Long id) {
+        if (!vantagemRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Vantagem não encontrada");
+        }
+        vantagemRepository.deleteById(id);
+    }
+
     private VantagemResponseDTO toResponse(Vantagem v) {
         VantagemResponseDTO dto = new VantagemResponseDTO();
         dto.setId(v.getId());
         dto.setNome(v.getNome());
         dto.setDescricao(v.getDescricao());
         dto.setCustoMoedas(v.getCustoMoedas());
+        dto.setImagemUrl(v.getImagemUrl());
         dto.setEmpresaParceiraId(v.getEmpresaParceira().getId());
         dto.setEmpresaParceiraNome(v.getEmpresaParceira().getNome());
         return dto;

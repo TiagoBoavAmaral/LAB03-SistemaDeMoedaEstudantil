@@ -8,6 +8,7 @@ import {
   ProfessoresApi,
   Professor,
 } from "../api/client";
+import { enviarEmailsTransacao } from "../services/emailService";
 
 export function MoedasPage() {
   const [alunos, setAlunos] = useState<Aluno[]>([]);
@@ -48,7 +49,31 @@ export function MoedasPage() {
     try {
       const tx = await MoedasApi.enviar(envio);
       setResultadoEnvio(tx);
-      alert("Moedas enviadas com sucesso!");
+      
+      // Buscar informações do aluno e professor para enviar emails
+      const alunoSelecionado = alunos.find(a => a.id === envio.alunoId);
+      const professorSelecionado = professores.find(p => p.nome === envio.professorNome);
+      
+      if (alunoSelecionado && professorSelecionado && alunoSelecionado.email && professorSelecionado.email) {
+        try {
+          // Enviar emails via EmailJS
+          await enviarEmailsTransacao({
+            professorNome: envio.professorNome,
+            professorEmail: professorSelecionado.email,
+            alunoNome: alunoSelecionado.nome,
+            alunoEmail: alunoSelecionado.email,
+            valor: envio.valor,
+            descricao: envio.descricao,
+            dataTransacao: new Date().toLocaleString('pt-BR'),
+          });
+          alert("Moedas enviadas com sucesso! Emails de confirmação enviados.");
+        } catch (emailError) {
+          console.error("Erro ao enviar emails:", emailError);
+          alert("Moedas enviadas com sucesso! Porém, houve um erro ao enviar os emails de confirmação.");
+        }
+      } else {
+        alert("Moedas enviadas com sucesso! (Emails não enviados: informações de email não encontradas)");
+      }
     } catch (e: any) {
       alert(e?.response?.data?.error || "Erro ao enviar moedas");
     }

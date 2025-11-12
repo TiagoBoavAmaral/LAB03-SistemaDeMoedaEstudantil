@@ -92,6 +92,7 @@ export type Transacao = {
   id: number;
   alunoId: number;
   alunoNome: string;
+  alunoEmail?: string;
   valor: number;
   tipo: string;
   responsavelTipo: string;
@@ -113,7 +114,7 @@ export const MoedasApi = {
     ).data,
 };
 
-export type Professor = { id: number; nome: string };
+export type Professor = { id: number; nome: string; email?: string };
 
 export const ProfessoresApi = {
   list: async (): Promise<Professor[]> =>
@@ -125,6 +126,7 @@ export type Vantagem = {
   nome: string;
   descricao: string;
   custoMoedas: number;
+  imagemUrl?: string;
   empresaParceiraId: number;
   empresaParceiraNome: string;
 };
@@ -133,6 +135,7 @@ export type VantagemRequest = {
   nome: string;
   descricao: string;
   custoMoedas: number;
+  imagemUrl?: string;
   empresaParceiraId: number;
 };
 
@@ -143,4 +146,9 @@ export const VantagensApi = {
     (await api.get(`/api/vantagens/${id}`)).data,
   create: async (payload: VantagemRequest): Promise<Vantagem> =>
     (await api.post("/api/vantagens", payload)).data,
+  update: async (id: number, payload: VantagemRequest): Promise<Vantagem> =>
+    (await api.put(`/api/vantagens/${id}`, payload)).data,
+  remove: async (id: number): Promise<void> => {
+    await api.delete(`/api/vantagens/${id}`);
+  },
 };

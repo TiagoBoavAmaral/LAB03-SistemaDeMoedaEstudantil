@@ -19,6 +19,9 @@ public class Vantagem {
     @Column(nullable = false)
     private Double custoMoedas;
 
+    @Column(length = 2000)
+    private String imagemUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "empresa_parceira_id", nullable = false)
     private EmpresaParceira empresaParceira;
@@ -53,6 +56,14 @@ public class Vantagem {
 
     public void setCustoMoedas(Double custoMoedas) {
         this.custoMoedas = custoMoedas;
+    }
+
+    public String getImagemUrl() {
+        return imagemUrl;
+    }
+
+    public void setImagemUrl(String imagemUrl) {
+        this.imagemUrl = imagemUrl;
     }
 
     public EmpresaParceira getEmpresaParceira() {

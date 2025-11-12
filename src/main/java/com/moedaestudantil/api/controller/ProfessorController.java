@@ -17,9 +17,9 @@ public class ProfessorController {
     public ResponseEntity<List<ProfessorDTO>> listar() {
         // Lista simples pré-cadastrada (pode migrar para BD no futuro)
         List<ProfessorDTO> professores = Arrays.asList(
-                new ProfessorDTO(1L, "Prof. Maria"),
-                new ProfessorDTO(2L, "Prof. João"),
-                new ProfessorDTO(3L, "Prof. Ana")
+                new ProfessorDTO(1L, "Prof. Maria", "prof.maria@escola.edu"),
+                new ProfessorDTO(2L, "Prof. João", "prof.joao@escola.edu"),
+                new ProfessorDTO(3L, "Prof. Ana", "prof.ana@escola.edu")
         );
         return ResponseEntity.ok(professores);
     }

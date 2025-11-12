@@ -67,6 +67,7 @@ public class MoedaService {
         if (t.getAluno() != null) {
             r.setAlunoId(t.getAluno().getId());
             r.setAlunoNome(t.getAluno().getNome());
+            r.setAlunoEmail(t.getAluno().getEmail());
         }
         r.setValor(t.getValor());
         r.setTipo(t.getTipo());

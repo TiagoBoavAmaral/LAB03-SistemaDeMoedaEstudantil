@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   VantagensApi,
   Vantagem,
@@ -18,7 +18,11 @@ export function VantagensPage() {
     descricao: "",
     custoMoedas: 0,
     empresaParceiraId: 0,
+    imagemUrl: "",
   });
+  const [imagemPreview, setImagemPreview] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     setLoading(true);
@@ -41,19 +45,96 @@ export function VantagensPage() {
     load();
   }, []);
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("A imagem deve ter no máximo 5MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setForm({ ...form, imagemUrl: base64String });
+        setImagemPreview(base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setForm({ ...form, imagemUrl: url });
+    setImagemPreview(url || null);
+    // Limpar o input de arquivo quando uma URL é digitada
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const clearImage = () => {
+    setForm({ ...form, imagemUrl: "" });
+    setImagemPreview(null);
+    // Limpar o input de arquivo
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const submit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     try {
-      await VantagensApi.create(form);
-      setForm({
-        nome: "",
-        descricao: "",
-        custoMoedas: 0,
-        empresaParceiraId: 0,
-      });
+      if (editingId) {
+        await VantagensApi.update(editingId, form);
+      } else {
+        await VantagensApi.create(form);
+      }
+      resetForm();
       await load();
     } catch (e: any) {
       alert(e?.response?.data?.error || "Erro ao salvar vantagem");
+    }
+  };
+
+  const resetForm = () => {
+    setForm({
+      nome: "",
+      descricao: "",
+      custoMoedas: 0,
+      empresaParceiraId: 0,
+      imagemUrl: "",
+    });
+    setImagemPreview(null);
+    setEditingId(null);
+    // Limpar o input de arquivo
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleEdit = (vantagem: Vantagem) => {
+    setForm({
+      nome: vantagem.nome,
+      descricao: vantagem.descricao,
+      custoMoedas: vantagem.custoMoedas,
+      empresaParceiraId: vantagem.empresaParceiraId,
+      imagemUrl: vantagem.imagemUrl || "",
+    });
+    setImagemPreview(vantagem.imagemUrl || null);
+    setEditingId(vantagem.id);
+    // Scroll para o formulário
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Tem certeza que deseja excluir esta vantagem?")) {
+      return;
+    }
+    try {
+      await VantagensApi.remove(id);
+      await load();
+    } catch (e: any) {
+      alert(e?.response?.data?.error || "Erro ao excluir vantagem");
     }
   };
 
@@ -65,6 +146,21 @@ export function VantagensPage() {
       ) : error ? (
         <p style={{ color: "#ef4444" }}>{error}</p>
       ) : null}
+
+      {editingId && (
+        <div
+          style={{
+            background: "rgba(59, 130, 246, 0.1)",
+            border: "1px solid rgba(59, 130, 246, 0.3)",
+            borderRadius: "8px",
+            padding: "12px",
+            marginBottom: "16px",
+            color: "var(--text)",
+          }}
+        >
+          <strong>Editando vantagem:</strong> Preencha os campos abaixo e clique em "Atualizar Vantagem" para salvar as alterações.
+        </div>
+      )}
 
       <form onSubmit={submit} className="form-grid">
         <input
@@ -107,10 +203,75 @@ export function VantagensPage() {
             </option>
           ))}
         </select>
+        <div style={{ gridColumn: "1 / -1" }}>
+          <label style={{ display: "block", marginBottom: "8px", fontSize: "14px" }}>
+            Imagem da Vantagem (URL ou upload)
+          </label>
+          <input
+            placeholder="URL da imagem (opcional)"
+            type="text"
+            value={form.imagemUrl || ""}
+            onChange={handleImageUrlChange}
+            style={{ marginBottom: "8px" }}
+          />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            style={{ marginBottom: "8px" }}
+          />
+          {imagemPreview && (
+            <div style={{ marginTop: "8px", position: "relative", display: "inline-block" }}>
+              <img
+                src={imagemPreview}
+                alt="Preview"
+                style={{
+                  maxWidth: "200px",
+                  maxHeight: "200px",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border)",
+                }}
+              />
+              <button
+                type="button"
+                onClick={clearImage}
+                style={{
+                  position: "absolute",
+                  top: "4px",
+                  right: "4px",
+                  background: "rgba(0, 0, 0, 0.7)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  padding: "4px 8px",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                }}
+              >
+                Remover
+              </button>
+            </div>
+          )}
+        </div>
         <div style={{ gridColumn: "1 / -1", display: "flex", gap: 8 }}>
           <button type="submit" className="btn">
-            Cadastrar Vantagem
+            {editingId ? "Atualizar Vantagem" : "Cadastrar Vantagem"}
           </button>
+          {editingId && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="btn"
+              style={{
+                background: "transparent",
+                border: "1px solid var(--border)",
+                color: "var(--text)",
+              }}
+            >
+              Cancelar
+            </button>
+          )}
         </div>
       </form>
 
@@ -143,6 +304,22 @@ export function VantagensPage() {
                   gap: "8px",
                 }}
               >
+                {v.imagemUrl && (
+                  <img
+                    src={v.imagemUrl}
+                    alt={v.nome}
+                    style={{
+                      width: "100%",
+                      height: "200px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                      marginBottom: "8px",
+                    }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                )}
                 <div
                   style={{
                     display: "flex",
@@ -187,6 +364,44 @@ export function VantagensPage() {
                   }}
                 >
                   Empresa: {v.empresaParceiraNome}
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "8px",
+                    marginTop: "8px",
+                  }}
+                >
+                  <button
+                    onClick={() => handleEdit(v)}
+                    style={{
+                      flex: 1,
+                      padding: "8px",
+                      background: "var(--primary)",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                    }}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(v.id)}
+                    style={{
+                      flex: 1,
+                      padding: "8px",
+                      background: "#ef4444",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                    }}
+                  >
+                    Excluir
+                  </button>
                 </div>
               </div>
             ))}
