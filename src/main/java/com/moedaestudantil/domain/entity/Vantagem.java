@@ -19,7 +19,7 @@ public class Vantagem {
     @Column(nullable = false)
     private Double custoMoedas;
 
-    @Column(length = 2000)
+    @Column(columnDefinition = "TEXT")
     private String imagemUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
