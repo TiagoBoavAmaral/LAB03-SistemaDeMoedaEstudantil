@@ -9,14 +9,16 @@ import {
   Professor,
 } from "../api/client";
 import { enviarEmailsTransacao } from "../services/emailService";
+import { useAuth } from "../contexts/AuthContext";
 
 export function MoedasPage() {
+  const { user } = useAuth();
   const [alunos, setAlunos] = useState<Aluno[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [envio, setEnvio] = useState<EnvioMoedasRequest>({
-    professorNome: "",
+    professorNome: user?.nome || "",
     alunoId: 0,
     valor: 0,
     descricao: "",
@@ -35,6 +37,9 @@ export function MoedasPage() {
         ]);
         setAlunos(listaAlunos);
         setProfessores(listaProfs);
+        if (user?.nome) {
+          setEnvio((prev) => ({ ...prev, professorNome: user.nome }));
+        }
         setError(null);
       } catch (e: any) {
         setError(e?.response?.data?.error || "Erro ao carregar alunos");
@@ -42,7 +47,7 @@ export function MoedasPage() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [user]);
 
   const submitEnvio = async (ev: React.FormEvent) => {
     ev.preventDefault();
@@ -93,20 +98,15 @@ export function MoedasPage() {
       <div className="card" style={{ marginBottom: 16 }}>
         <h3>Enviar moedas (Professor → Aluno)</h3>
         <form onSubmit={submitEnvio} className="form-grid">
-          <select
+          <input
+            type="text"
             value={envio.professorNome}
-            onChange={(e) =>
-              setEnvio({ ...envio, professorNome: e.target.value })
-            }
-            required
-          >
-            <option value="">Selecione um professor</option>
-            {professores.map((p) => (
-              <option key={p.id} value={p.nome}>
-                {p.nome}
-              </option>
-            ))}
-          </select>
+            readOnly
+            style={{ gridColumn: "1 / -1", background: "rgba(255,255,255,0.05)" }}
+          />
+          <label style={{ gridColumn: "1 / -1", fontSize: "12px", color: "var(--muted)" }}>
+            Professor: {user?.nome}
+          </label>
           <select
             value={envio.alunoId}
             onChange={(e) =>

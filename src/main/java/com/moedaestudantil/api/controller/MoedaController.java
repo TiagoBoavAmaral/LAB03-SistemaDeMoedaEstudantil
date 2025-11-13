@@ -36,6 +36,15 @@ public class MoedaController {
     public ResponseEntity<List<TransacaoResponseDTO>> extratoProfessor(@RequestParam("nome") String professorNome) {
         return ResponseEntity.ok(moedaService.listarExtratoProfessorPorNome(professorNome));
     }
+
+    // Troca de moedas por vantagem (aluno)
+    @PostMapping("/alunos/{alunoId}/trocar-vantagem/{vantagemId}")
+    public ResponseEntity<TransacaoResponseDTO> trocarVantagem(
+            @PathVariable Long alunoId,
+            @PathVariable Long vantagemId
+    ) {
+        return ResponseEntity.ok(moedaService.trocarMoedasPorVantagem(alunoId, vantagemId));
+    }
 }
 
 

@@ -1,28 +1,50 @@
 package com.moedaestudantil.api.controller;
 
-import com.moedaestudantil.application.dto.ProfessorDTO;
+import com.moedaestudantil.application.dto.ProfessorRequestDTO;
+import com.moedaestudantil.application.dto.ProfessorResponseDTO;
+import com.moedaestudantil.application.service.ProfessorService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
+import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/professores")
 public class ProfessorController {
 
+    private final ProfessorService professorService;
+
+    public ProfessorController(ProfessorService professorService) {
+        this.professorService = professorService;
+    }
+
+    @PostMapping
+    public ResponseEntity<ProfessorResponseDTO> criar(@Valid @RequestBody ProfessorRequestDTO dto) {
+        ProfessorResponseDTO resp = professorService.criar(dto);
+        return ResponseEntity.created(URI.create("/api/professores/" + resp.getId())).body(resp);
+    }
+
     @GetMapping
-    public ResponseEntity<List<ProfessorDTO>> listar() {
-        // Lista simples pré-cadastrada (pode migrar para BD no futuro)
-        List<ProfessorDTO> professores = Arrays.asList(
-                new ProfessorDTO(1L, "Prof. Maria", "prof.maria@escola.edu"),
-                new ProfessorDTO(2L, "Prof. João", "prof.joao@escola.edu"),
-                new ProfessorDTO(3L, "Prof. Ana", "prof.ana@escola.edu")
-        );
-        return ResponseEntity.ok(professores);
+    public ResponseEntity<List<ProfessorResponseDTO>> listar() {
+        return ResponseEntity.ok(professorService.listarTodos());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProfessorResponseDTO> buscar(@PathVariable Long id) {
+        return ResponseEntity.ok(professorService.buscarPorId(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProfessorResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody ProfessorRequestDTO dto) {
+        return ResponseEntity.ok(professorService.atualizar(id, dto));
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletar(@PathVariable Long id) {
+        professorService.deletar(id);
     }
 }
-
-

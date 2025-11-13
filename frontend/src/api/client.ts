@@ -7,6 +7,36 @@ export const api = axios.create({
   },
 });
 
+// Interceptor para adicionar token JWT
+api.interceptors.request.use((config) => {
+  const userStr = localStorage.getItem("user");
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      if (user.token) {
+        config.headers.Authorization = `Bearer ${user.token}`;
+      }
+    } catch (e) {
+      // Ignorar erro
+    }
+  }
+  return config;
+});
+
+// Interceptor para tratar erros de autenticação
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Só faz logout em caso de 401 (não autenticado)
+    // 403 (sem permissão) não deve fazer logout, apenas mostrar erro
+    if (error.response?.status === 401) {
+      localStorage.removeItem("user");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
 export type Aluno = {
   id: number;
   nome: string;
@@ -112,13 +142,26 @@ export const MoedasApi = {
         params: { nome: professorNome },
       })
     ).data,
+  trocarVantagem: async (alunoId: number, vantagemId: number): Promise<Transacao> =>
+    (await api.post(`/api/moedas/alunos/${alunoId}/trocar-vantagem/${vantagemId}`)).data,
 };
 
-export type Professor = { id: number; nome: string; email?: string };
+export type Professor = { id: number; nome: string; email?: string; departamento?: string };
+
+export type ProfessorRequest = {
+  nome: string;
+  email: string;
+  senha?: string;
+  departamento: string;
+};
 
 export const ProfessoresApi = {
   list: async (): Promise<Professor[]> =>
     (await api.get("/api/professores")).data,
+  get: async (id: number): Promise<Professor> =>
+    (await api.get(`/api/professores/${id}`)).data,
+  update: async (id: number, payload: ProfessorRequest): Promise<Professor> =>
+    (await api.put(`/api/professores/${id}`, payload)).data,
 };
 
 export type Vantagem = {
@@ -151,4 +194,24 @@ export const VantagensApi = {
   remove: async (id: number): Promise<void> => {
     await api.delete(`/api/vantagens/${id}`);
   },
+};
+
+export type VantagemAdquirida = {
+  id: number;
+  vantagemId: number;
+  vantagemNome: string;
+  vantagemDescricao: string;
+  vantagemImagemUrl?: string;
+  empresaParceiraNome: string;
+  codigoUso: string;
+  resgatado: boolean;
+  dataAdquisicao: string;
+  dataResgate?: string;
+};
+
+export const VantagensAdquiridasApi = {
+  list: async (alunoId: number): Promise<VantagemAdquirida[]> =>
+    (await api.get(`/api/vantagens-adquiridas/alunos/${alunoId}`)).data,
+  resgatar: async (codigoUso: string): Promise<VantagemAdquirida> =>
+    (await api.post(`/api/vantagens-adquiridas/resgatar/${codigoUso}`)).data,
 };

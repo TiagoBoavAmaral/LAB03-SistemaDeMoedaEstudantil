@@ -6,8 +6,11 @@ import com.moedaestudantil.application.dto.TransacaoResponseDTO;
 import com.moedaestudantil.domain.entity.Aluno;
 import com.moedaestudantil.domain.entity.TipoResponsavel;
 import com.moedaestudantil.domain.entity.TransacaoMoeda;
+import com.moedaestudantil.domain.entity.Vantagem;
 import com.moedaestudantil.domain.repository.AlunoRepository;
 import com.moedaestudantil.domain.repository.TransacaoMoedaRepository;
+import com.moedaestudantil.domain.repository.VantagemRepository;
+import com.moedaestudantil.application.service.VantagemAdquiridaService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,10 +22,19 @@ public class MoedaService {
 
     private final AlunoRepository alunoRepository;
     private final TransacaoMoedaRepository transacaoRepository;
+    private final VantagemRepository vantagemRepository;
+    private final VantagemAdquiridaService vantagemAdquiridaService;
 
-    public MoedaService(AlunoRepository alunoRepository, TransacaoMoedaRepository transacaoRepository) {
+    public MoedaService(
+            AlunoRepository alunoRepository,
+            TransacaoMoedaRepository transacaoRepository,
+            VantagemRepository vantagemRepository,
+            VantagemAdquiridaService vantagemAdquiridaService
+    ) {
         this.alunoRepository = alunoRepository;
         this.transacaoRepository = transacaoRepository;
+        this.vantagemRepository = vantagemRepository;
+        this.vantagemAdquiridaService = vantagemAdquiridaService;
     }
 
     @Transactional
@@ -59,6 +71,36 @@ public class MoedaService {
     public List<TransacaoResponseDTO> listarExtratoProfessorPorNome(String professorNome) {
         return transacaoRepository.findByResponsavelNomeOrderByCriadoEmDesc(professorNome)
                 .stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public TransacaoResponseDTO trocarMoedasPorVantagem(Long alunoId, Long vantagemId) {
+        Aluno aluno = alunoRepository.findById(alunoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado"));
+
+        Vantagem vantagem = vantagemRepository.findById(vantagemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Vantagem não encontrada"));
+
+        if (aluno.getSaldoMoedas() < vantagem.getCustoMoedas()) {
+            throw new IllegalArgumentException("Saldo insuficiente. Necessário: " + vantagem.getCustoMoedas() + ", Disponível: " + aluno.getSaldoMoedas());
+        }
+
+        aluno.setSaldoMoedas(aluno.getSaldoMoedas() - vantagem.getCustoMoedas());
+        alunoRepository.save(aluno);
+
+        TransacaoMoeda t = new TransacaoMoeda();
+        t.setAluno(aluno);
+        t.setValor(vantagem.getCustoMoedas());
+        t.setTipo("DEBITO");
+        t.setResponsavelTipo(TipoResponsavel.EMPRESA);
+        t.setResponsavelNome(vantagem.getEmpresaParceira().getNome());
+        t.setDescricao("Troca por vantagem: " + vantagem.getNome());
+        TransacaoMoeda salva = transacaoRepository.save(t);
+
+        // Criar registro de vantagem adquirida
+        vantagemAdquiridaService.criarVantagemAdquirida(alunoId, vantagemId);
+
+        return toResponse(salva);
     }
 
     private TransacaoResponseDTO toResponse(TransacaoMoeda t) {

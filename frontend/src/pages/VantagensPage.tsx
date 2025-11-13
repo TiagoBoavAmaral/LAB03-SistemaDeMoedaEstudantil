@@ -5,13 +5,19 @@ import {
   VantagemRequest,
   EmpresasApi,
   Empresa,
+  MoedasApi,
+  AlunosApi,
+  Aluno,
 } from "../api/client";
+import { useAuth } from "../contexts/AuthContext";
 
 export function VantagensPage() {
+  const { user, hasRole } = useAuth();
   const [vantagens, setVantagens] = useState<Vantagem[]>([]);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [aluno, setAluno] = useState<Aluno | null>(null);
 
   const [form, setForm] = useState<VantagemRequest>({
     nome: "",
@@ -27,12 +33,21 @@ export function VantagensPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const [vantagensData, empresasData] = await Promise.all([
-        VantagensApi.list(),
-        EmpresasApi.list(),
-      ]);
-      setVantagens(vantagensData);
-      setEmpresas(empresasData);
+      const promises: Promise<any>[] = [VantagensApi.list()];
+      if (hasRole("EMPRESA")) {
+        promises.push(EmpresasApi.list());
+      }
+      if (hasRole("ALUNO") && user) {
+        promises.push(AlunosApi.get(user.id));
+      }
+      const results = await Promise.all(promises);
+      setVantagens(results[0]);
+      if (hasRole("EMPRESA")) {
+        setEmpresas(results[1]);
+      }
+      if (hasRole("ALUNO") && user) {
+        setAluno(results[hasRole("EMPRESA") ? 2 : 1]);
+      }
       setError(null);
     } catch (e: any) {
       setError(e?.response?.data?.error || "Erro ao carregar dados");
@@ -138,6 +153,26 @@ export function VantagensPage() {
     }
   };
 
+  const handleTrocarVantagem = async (vantagemId: number) => {
+    if (!user || !hasRole("ALUNO")) return;
+    if (
+      !confirm(
+        `Deseja trocar ${
+          vantagens.find((v) => v.id === vantagemId)?.custoMoedas
+        } moedas por esta vantagem?`
+      )
+    ) {
+      return;
+    }
+    try {
+      await MoedasApi.trocarVantagem(user.id, vantagemId);
+      alert("Vantagem adquirida com sucesso!");
+      await load();
+    } catch (e: any) {
+      alert(e?.response?.data?.error || "Erro ao trocar vantagem");
+    }
+  };
+
   return (
     <div>
       <h2 className="section-title">Vantagens</h2>
@@ -146,6 +181,21 @@ export function VantagensPage() {
       ) : error ? (
         <p style={{ color: "#ef4444" }}>{error}</p>
       ) : null}
+
+      {hasRole("ALUNO") && aluno && (
+        <div
+          style={{
+            background: "rgba(59, 130, 246, 0.1)",
+            border: "1px solid rgba(59, 130, 246, 0.3)",
+            borderRadius: "8px",
+            padding: "12px",
+            marginBottom: "16px",
+            color: "var(--text)",
+          }}
+        >
+          <strong>Seu saldo:</strong> {aluno.saldoMoedas} moedas
+        </div>
+      )}
 
       {editingId && (
         <div
@@ -158,122 +208,137 @@ export function VantagensPage() {
             color: "var(--text)",
           }}
         >
-          <strong>Editando vantagem:</strong> Preencha os campos abaixo e clique em "Atualizar Vantagem" para salvar as alterações.
+          <strong>Editando vantagem:</strong> Preencha os campos abaixo e clique
+          em "Atualizar Vantagem" para salvar as alterações.
         </div>
       )}
 
-      <form onSubmit={submit} className="form-grid">
-        <input
-          placeholder="Nome da Vantagem"
-          value={form.nome}
-          onChange={(e) => setForm({ ...form, nome: e.target.value })}
-          required
-          style={{ gridColumn: "1 / -1" }}
-        />
-        <textarea
-          placeholder="Descrição"
-          value={form.descricao}
-          onChange={(e) => setForm({ ...form, descricao: e.target.value })}
-          required
-          rows={3}
-          style={{ gridColumn: "1 / -1" }}
-        />
-        <input
-          placeholder="Custo em Moedas"
-          type="number"
-          min="0"
-          step="0.01"
-          value={form.custoMoedas || ""}
-          onChange={(e) =>
-            setForm({ ...form, custoMoedas: Number(e.target.value) })
-          }
-          required
-        />
-        <select
-          value={form.empresaParceiraId}
-          onChange={(e) =>
-            setForm({ ...form, empresaParceiraId: Number(e.target.value) })
-          }
-          required
-        >
-          <option value="">Selecione uma empresa</option>
-          {empresas.map((emp) => (
-            <option key={emp.id} value={emp.id}>
-              {emp.nome}
-            </option>
-          ))}
-        </select>
-        <div style={{ gridColumn: "1 / -1" }}>
-          <label style={{ display: "block", marginBottom: "8px", fontSize: "14px" }}>
-            Imagem da Vantagem (URL ou upload)
-          </label>
+      {hasRole("EMPRESA") && (
+        <form onSubmit={submit} className="form-grid">
           <input
-            placeholder="URL da imagem (opcional)"
-            type="text"
-            value={form.imagemUrl || ""}
-            onChange={handleImageUrlChange}
-            style={{ marginBottom: "8px" }}
+            placeholder="Nome da Vantagem"
+            value={form.nome}
+            onChange={(e) => setForm({ ...form, nome: e.target.value })}
+            required
+            style={{ gridColumn: "1 / -1" }}
+          />
+          <textarea
+            placeholder="Descrição"
+            value={form.descricao}
+            onChange={(e) => setForm({ ...form, descricao: e.target.value })}
+            required
+            rows={3}
+            style={{ gridColumn: "1 / -1" }}
           />
           <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            style={{ marginBottom: "8px" }}
+            placeholder="Custo em Moedas"
+            type="number"
+            min="0"
+            step="0.01"
+            value={form.custoMoedas || ""}
+            onChange={(e) =>
+              setForm({ ...form, custoMoedas: Number(e.target.value) })
+            }
+            required
           />
-          {imagemPreview && (
-            <div style={{ marginTop: "8px", position: "relative", display: "inline-block" }}>
-              <img
-                src={imagemPreview}
-                alt="Preview"
-                style={{
-                  maxWidth: "200px",
-                  maxHeight: "200px",
-                  borderRadius: "8px",
-                  border: "1px solid var(--border)",
-                }}
-              />
-              <button
-                type="button"
-                onClick={clearImage}
-                style={{
-                  position: "absolute",
-                  top: "4px",
-                  right: "4px",
-                  background: "rgba(0, 0, 0, 0.7)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  padding: "4px 8px",
-                  cursor: "pointer",
-                  fontSize: "12px",
-                }}
-              >
-                Remover
-              </button>
-            </div>
-          )}
-        </div>
-        <div style={{ gridColumn: "1 / -1", display: "flex", gap: 8 }}>
-          <button type="submit" className="btn">
-            {editingId ? "Atualizar Vantagem" : "Cadastrar Vantagem"}
-          </button>
-          {editingId && (
-            <button
-              type="button"
-              onClick={resetForm}
-              className="btn"
+          <select
+            value={form.empresaParceiraId}
+            onChange={(e) =>
+              setForm({ ...form, empresaParceiraId: Number(e.target.value) })
+            }
+            required
+          >
+            <option value="">Selecione uma empresa</option>
+            {empresas.map((emp) => (
+              <option key={emp.id} value={emp.id}>
+                {emp.nome}
+              </option>
+            ))}
+          </select>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <label
               style={{
-                background: "transparent",
-                border: "1px solid var(--border)",
-                color: "var(--text)",
+                display: "block",
+                marginBottom: "8px",
+                fontSize: "14px",
               }}
             >
-              Cancelar
+              Imagem da Vantagem (URL ou upload)
+            </label>
+            <input
+              placeholder="URL da imagem (opcional)"
+              type="text"
+              value={form.imagemUrl || ""}
+              onChange={handleImageUrlChange}
+              style={{ marginBottom: "8px" }}
+            />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              style={{ marginBottom: "8px" }}
+            />
+            {imagemPreview && (
+              <div
+                style={{
+                  marginTop: "8px",
+                  position: "relative",
+                  display: "inline-block",
+                }}
+              >
+                <img
+                  src={imagemPreview}
+                  alt="Preview"
+                  style={{
+                    maxWidth: "200px",
+                    maxHeight: "200px",
+                    borderRadius: "8px",
+                    border: "1px solid var(--border)",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={clearImage}
+                  style={{
+                    position: "absolute",
+                    top: "4px",
+                    right: "4px",
+                    background: "rgba(0, 0, 0, 0.7)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    padding: "4px 8px",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                  }}
+                >
+                  Remover
+                </button>
+              </div>
+            )}
+          </div>
+          <div style={{ gridColumn: "1 / -1", display: "flex", gap: 8 }}>
+            <button type="submit" className="btn">
+              {editingId ? "Atualizar Vantagem" : "Cadastrar Vantagem"}
             </button>
-          )}
-        </div>
-      </form>
+            {editingId && (
+              <button
+                type="button"
+                onClick={resetForm}
+                className="btn"
+                style={{
+                  background: "transparent",
+                  border: "1px solid var(--border)",
+                  color: "var(--text)",
+                }}
+              >
+                Cancelar
+              </button>
+            )}
+          </div>
+        </form>
+      )}
 
       <div style={{ marginTop: "24px" }}>
         <h3 style={{ marginBottom: "12px", fontSize: "16px" }}>
@@ -372,36 +437,66 @@ export function VantagensPage() {
                     marginTop: "8px",
                   }}
                 >
-                  <button
-                    onClick={() => handleEdit(v)}
-                    style={{
-                      flex: 1,
-                      padding: "8px",
-                      background: "var(--primary)",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                    }}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(v.id)}
-                    style={{
-                      flex: 1,
-                      padding: "8px",
-                      background: "#ef4444",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                    }}
-                  >
-                    Excluir
-                  </button>
+                  {hasRole("ALUNO") && aluno && (
+                    <button
+                      onClick={() => handleTrocarVantagem(v.id)}
+                      disabled={aluno.saldoMoedas < v.custoMoedas}
+                      style={{
+                        flex: 1,
+                        padding: "8px",
+                        background:
+                          aluno.saldoMoedas >= v.custoMoedas
+                            ? "var(--primary)"
+                            : "#666",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor:
+                          aluno.saldoMoedas >= v.custoMoedas
+                            ? "pointer"
+                            : "not-allowed",
+                        fontSize: "14px",
+                      }}
+                    >
+                      {aluno.saldoMoedas >= v.custoMoedas
+                        ? "Trocar"
+                        : "Saldo Insuficiente"}
+                    </button>
+                  )}
+                  {hasRole("EMPRESA") && (
+                    <>
+                      <button
+                        onClick={() => handleEdit(v)}
+                        style={{
+                          flex: 1,
+                          padding: "8px",
+                          background: "var(--primary)",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                        }}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(v.id)}
+                        style={{
+                          flex: 1,
+                          padding: "8px",
+                          background: "#ef4444",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                        }}
+                      >
+                        Excluir
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
@@ -411,4 +506,3 @@ export function VantagensPage() {
     </div>
   );
 }
-
