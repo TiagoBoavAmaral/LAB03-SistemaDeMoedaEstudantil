@@ -10,6 +10,7 @@ import {
   Aluno,
 } from "../api/client";
 import { useAuth } from "../contexts/AuthContext";
+import { enviarEmailConfirmacaoVantagem } from "../services/emailService";
 
 export function VantagensPage() {
   const { user, hasRole } = useAuth();
@@ -154,18 +155,40 @@ export function VantagensPage() {
   };
 
   const handleTrocarVantagem = async (vantagemId: number) => {
-    if (!user || !hasRole("ALUNO")) return;
+    if (!user || !hasRole("ALUNO") || !aluno) return;
+    
+    const vantagem = vantagens.find((v) => v.id === vantagemId);
+    if (!vantagem) return;
+
     if (
       !confirm(
-        `Deseja trocar ${
-          vantagens.find((v) => v.id === vantagemId)?.custoMoedas
-        } moedas por esta vantagem?`
+        `Deseja trocar ${vantagem.custoMoedas} moedas por esta vantagem?`
       )
     ) {
       return;
     }
     try {
       await MoedasApi.trocarVantagem(user.id, vantagemId);
+      
+      // Enviar email de confirmação
+      try {
+        const saldoRestante = aluno.saldoMoedas - vantagem.custoMoedas;
+        await enviarEmailConfirmacaoVantagem({
+          alunoNome: user.nome,
+          alunoEmail: user.email,
+          vantagemNome: vantagem.nome,
+          vantagemDescricao: vantagem.descricao,
+          vantagemImagemUrl: vantagem.imagemUrl,
+          custoMoedas: vantagem.custoMoedas,
+          empresaParceiraNome: vantagem.empresaParceiraNome,
+          dataTroca: new Date().toLocaleString("pt-BR"),
+          saldoRestante: saldoRestante,
+        });
+      } catch (emailError) {
+        // Não mostrar erro ao usuário, apenas logar
+        console.error("Erro ao enviar email de confirmação:", emailError);
+      }
+      
       alert("Vantagem adquirida com sucesso!");
       await load();
     } catch (e: any) {

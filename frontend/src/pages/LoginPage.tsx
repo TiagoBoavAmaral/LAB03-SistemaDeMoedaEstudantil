@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -9,6 +9,16 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    // Garantir que o vídeo reproduza automaticamente
+    if (videoRef.current) {
+      videoRef.current.play().catch(() => {
+        // Ignorar erros de autoplay
+      });
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,25 +38,83 @@ export function LoginPage() {
   return (
     <div
       style={{
+        position: "relative",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         minHeight: "100vh",
         background: "var(--bg)",
+        overflow: "hidden",
       }}
     >
+      {/* Vídeo de fundo */}
+      <video
+        ref={videoRef}
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="metadata"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          opacity: 0.3,
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+      >
+        <source src="/timelapseCoreu.mp4" type="video/mp4" />
+      </video>
+
+      {/* Overlay escuro para melhorar contraste */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: "rgba(15, 23, 42, 0.5)",
+          zIndex: 1,
+          pointerEvents: "none",
+        }}
+      />
       <div
         className="card"
         style={{
+          position: "relative",
           width: "100%",
           maxWidth: "400px",
           padding: "32px",
+          zIndex: 2,
         }}
       >
-        <h2 style={{ textAlign: "center", marginBottom: "24px" }}>
-          Moeda Estudantil
-        </h2>
-        <h3 style={{ textAlign: "center", marginBottom: "24px", fontSize: "18px" }}>
+        <div style={{ textAlign: "center", marginBottom: "24px" }}>
+          <img
+            src="/logomoedaa.png"
+            alt="Logo Moeda Estudantil"
+            style={{
+              width: "80px",
+              height: "80px",
+              marginBottom: "16px",
+              display: "block",
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}
+          />
+          <h2 style={{ margin: 0 }}>Sistema de Moeda Estudantil</h2>
+        </div>
+        <h3
+          style={{
+            textAlign: "center",
+            marginBottom: "24px",
+            fontSize: "18px",
+          }}
+        >
           Login
         </h3>
 
@@ -97,4 +165,3 @@ export function LoginPage() {
     </div>
   );
 }
-

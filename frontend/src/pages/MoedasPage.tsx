@@ -62,6 +62,15 @@ export function MoedasPage() {
       if (alunoSelecionado && professorSelecionado && alunoSelecionado.email && professorSelecionado.email) {
         try {
           // Enviar emails via EmailJS
+          console.log("Preparando para enviar emails de confirmação:", {
+            professorNome: envio.professorNome,
+            professorEmail: professorSelecionado.email,
+            alunoNome: alunoSelecionado.nome,
+            alunoEmail: alunoSelecionado.email,
+            valor: envio.valor,
+            descricao: envio.descricao,
+          });
+          
           await enviarEmailsTransacao({
             professorNome: envio.professorNome,
             professorEmail: professorSelecionado.email,
@@ -71,12 +80,34 @@ export function MoedasPage() {
             descricao: envio.descricao,
             dataTransacao: new Date().toLocaleString('pt-BR'),
           });
+          
+          console.log("Emails de confirmação enviados com sucesso");
           alert("Moedas enviadas com sucesso! Emails de confirmação enviados.");
-        } catch (emailError) {
-          console.error("Erro ao enviar emails:", emailError);
+        } catch (emailError: any) {
+          console.error("Erro ao enviar emails de confirmação:", emailError);
+          console.error("Detalhes do erro de email:", {
+            message: emailError?.message,
+            status: emailError?.status,
+            text: emailError?.text,
+            stack: emailError?.stack,
+            dadosEnviados: {
+              professorNome: envio.professorNome,
+              professorEmail: professorSelecionado?.email,
+              alunoNome: alunoSelecionado?.nome,
+              alunoEmail: alunoSelecionado?.email,
+              valor: envio.valor,
+              descricao: envio.descricao,
+            },
+          });
           alert("Moedas enviadas com sucesso! Porém, houve um erro ao enviar os emails de confirmação.");
         }
       } else {
+        console.warn("Emails não enviados - informações faltando:", {
+          alunoSelecionado: !!alunoSelecionado,
+          professorSelecionado: !!professorSelecionado,
+          alunoEmail: alunoSelecionado?.email || "não encontrado",
+          professorEmail: professorSelecionado?.email || "não encontrado",
+        });
         alert("Moedas enviadas com sucesso! (Emails não enviados: informações de email não encontradas)");
       }
     } catch (e: any) {
