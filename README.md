@@ -4,6 +4,14 @@
 
 Desenvolvimento de um sistema para estimular o reconhecimento do mérito estudantil através de uma moeda virtual. Essa moeda pode ser distribuída por professores aos seus alunos e trocada pelos alunos por produtos e descontos em empresas parceiras.
 
+## Hospedagem / Acesso Online
+
+O sistema foi implantado usando Render e Vercel e  está disponível para acesso online. Clique no link abaixo para acessar a versão no ar:
+
+> ### 🌐 **[https://sistema-moeda-estudantil.vercel.app/](https://sistema-moeda-estudantil.vercel.app/)**
+
+---
+
 ## Alunos
 
 - Tiago Boaventura Amaral
