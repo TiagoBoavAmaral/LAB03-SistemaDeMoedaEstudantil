@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { api } from "../api/client";
 
 export type UserRole = "EMPRESA" | "PROFESSOR" | "ALUNO";
 
@@ -35,30 +36,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, senha: string) => {
-    const response = await fetch("http://localhost:8080/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, senha }),
-    });
+    try {
+      const response = await api.post("/api/auth/login", { email, senha });
+      const data = response.data;
+      
+      const userData: User = {
+        id: data.id,
+        nome: data.nome,
+        email: data.email,
+        tipoUsuario: data.tipoUsuario,
+        token: data.token,
+      };
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: "Erro ao fazer login" }));
-      throw new Error(error.error || "Email ou senha inválidos");
+      setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
+    } catch (error: any) {
+      console.error("Login error:", error);
+      const message = error.response?.data?.error || "Email ou senha inválidos";
+      throw new Error(message);
     }
-
-    const data = await response.json();
-    const userData: User = {
-      id: data.id,
-      nome: data.nome,
-      email: data.email,
-      tipoUsuario: data.tipoUsuario,
-      token: data.token,
-    };
-
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   const logout = () => {
