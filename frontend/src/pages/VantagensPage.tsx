@@ -11,9 +11,11 @@ import {
 } from "../api/client";
 import { useAuth } from "../contexts/AuthContext";
 import { enviarEmailConfirmacaoVantagem } from "../services/emailService";
+import { useNotification } from "../contexts/NotificationContext";
 
 export function VantagensPage() {
   const { user, hasRole } = useAuth();
+  const { showNotification, confirm } = useNotification();
   const [vantagens, setVantagens] = useState<Vantagem[]>([]);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +67,7 @@ export function VantagensPage() {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert("A imagem deve ter no máximo 5MB");
+        showNotification("A imagem deve ter no máximo 5MB", "error");
         return;
       }
       const reader = new FileReader();
@@ -108,7 +110,7 @@ export function VantagensPage() {
       resetForm();
       await load();
     } catch (e: any) {
-      alert(e?.response?.data?.error || "Erro ao salvar vantagem");
+      showNotification(e?.response?.data?.error || "Erro ao salvar vantagem", "error");
     }
   };
 
@@ -143,14 +145,22 @@ export function VantagensPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Tem certeza que deseja excluir esta vantagem?")) {
+    const confirmed = await confirm("Tem certeza que deseja excluir esta vantagem?", {
+      title: "Excluir Vantagem",
+      type: "danger",
+      confirmText: "Excluir",
+      cancelText: "Cancelar",
+    });
+    
+    if (!confirmed) {
       return;
     }
+    
     try {
       await VantagensApi.remove(id);
       await load();
     } catch (e: any) {
-      alert(e?.response?.data?.error || "Erro ao excluir vantagem");
+      showNotification(e?.response?.data?.error || "Erro ao excluir vantagem", "error");
     }
   };
 
@@ -160,11 +170,17 @@ export function VantagensPage() {
     const vantagem = vantagens.find((v) => v.id === vantagemId);
     if (!vantagem) return;
 
-    if (
-      !confirm(
-        `Deseja trocar ${vantagem.custoMoedas} moedas por esta vantagem?`
-      )
-    ) {
+    const confirmed = await confirm(
+      `Deseja trocar ${vantagem.custoMoedas} moedas por esta vantagem?`,
+      {
+        title: "Trocar Moedas",
+        type: "warning",
+        confirmText: "Confirmar Troca",
+        cancelText: "Cancelar",
+      }
+    );
+    
+    if (!confirmed) {
       return;
     }
     try {
@@ -189,10 +205,10 @@ export function VantagensPage() {
         console.error("Erro ao enviar email de confirmação:", emailError);
       }
       
-      alert("Vantagem adquirida com sucesso!");
+      showNotification("Vantagem adquirida com sucesso!", "success");
       await load();
     } catch (e: any) {
-      alert(e?.response?.data?.error || "Erro ao trocar vantagem");
+      showNotification(e?.response?.data?.error || "Erro ao trocar vantagem", "error");
     }
   };
 

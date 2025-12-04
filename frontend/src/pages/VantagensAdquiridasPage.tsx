@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { VantagensAdquiridasApi, VantagemAdquirida } from "../api/client";
+import { useNotification } from "../contexts/NotificationContext";
 
 export function VantagensAdquiridasPage() {
   const { user, hasRole } = useAuth();
+  const { showNotification, confirm } = useNotification();
   const [vantagens, setVantagens] = useState<VantagemAdquirida[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,22 +32,29 @@ export function VantagensAdquiridasPage() {
   };
 
   const handleResgatar = async (codigoUso: string) => {
-    if (!confirm("Deseja resgatar esta vantagem? O código só pode ser usado uma vez.")) {
+    const confirmed = await confirm("Deseja resgatar esta vantagem? O código só pode ser usado uma vez.", {
+      title: "Resgatar Vantagem",
+      type: "warning",
+      confirmText: "Resgatar",
+      cancelText: "Cancelar",
+    });
+    
+    if (!confirmed) {
       return;
     }
 
     try {
       await VantagensAdquiridasApi.resgatar(codigoUso);
-      alert("Vantagem resgatada com sucesso!");
+      showNotification("Vantagem resgatada com sucesso!", "success");
       await loadVantagens();
     } catch (e: any) {
-      alert(e?.response?.data?.error || "Erro ao resgatar vantagem");
+      showNotification(e?.response?.data?.error || "Erro ao resgatar vantagem", "error");
     }
   };
 
   const copiarCodigo = (codigo: string) => {
     navigator.clipboard.writeText(codigo);
-    alert("Código copiado para a área de transferência!");
+    showNotification("Código copiado para a área de transferência!", "success");
   };
 
   if (!hasRole("ALUNO")) {

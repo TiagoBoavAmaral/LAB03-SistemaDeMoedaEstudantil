@@ -10,9 +10,11 @@ import {
 } from "../api/client";
 import { enviarEmailsTransacao } from "../services/emailService";
 import { useAuth } from "../contexts/AuthContext";
+import { useNotification } from "../contexts/NotificationContext";
 
 export function MoedasPage() {
   const { user } = useAuth();
+  const { showNotification } = useNotification();
   const [alunos, setAlunos] = useState<Aluno[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,12 +56,19 @@ export function MoedasPage() {
     try {
       const tx = await MoedasApi.enviar(envio);
       setResultadoEnvio(tx);
-      
+
       // Buscar informações do aluno e professor para enviar emails
-      const alunoSelecionado = alunos.find(a => a.id === envio.alunoId);
-      const professorSelecionado = professores.find(p => p.nome === envio.professorNome);
-      
-      if (alunoSelecionado && professorSelecionado && alunoSelecionado.email && professorSelecionado.email) {
+      const alunoSelecionado = alunos.find((a) => a.id === envio.alunoId);
+      const professorSelecionado = professores.find(
+        (p) => p.nome === envio.professorNome
+      );
+
+      if (
+        alunoSelecionado &&
+        professorSelecionado &&
+        alunoSelecionado.email &&
+        professorSelecionado.email
+      ) {
         try {
           // Enviar emails via EmailJS
           console.log("Preparando para enviar emails de confirmação:", {
@@ -70,7 +79,7 @@ export function MoedasPage() {
             valor: envio.valor,
             descricao: envio.descricao,
           });
-          
+
           await enviarEmailsTransacao({
             professorNome: envio.professorNome,
             professorEmail: professorSelecionado.email,
@@ -78,11 +87,14 @@ export function MoedasPage() {
             alunoEmail: alunoSelecionado.email,
             valor: envio.valor,
             descricao: envio.descricao,
-            dataTransacao: new Date().toLocaleString('pt-BR'),
+            dataTransacao: new Date().toLocaleString("pt-BR"),
           });
-          
+
           console.log("Emails de confirmação enviados com sucesso");
-          alert("Moedas enviadas com sucesso! Emails de confirmação enviados.");
+          showNotification(
+            "Moedas enviadas com sucesso! Emails de confirmação enviados.",
+            "success"
+          );
         } catch (emailError: any) {
           console.error("Erro ao enviar emails de confirmação:", emailError);
           console.error("Detalhes do erro de email:", {
@@ -99,7 +111,10 @@ export function MoedasPage() {
               descricao: envio.descricao,
             },
           });
-          alert("Moedas enviadas com sucesso! Porém, houve um erro ao enviar os emails de confirmação.");
+          showNotification(
+            "Moedas enviadas com sucesso! Porém, houve um erro ao enviar os emails de confirmação.",
+            "warning"
+          );
         }
       } else {
         console.warn("Emails não enviados - informações faltando:", {
@@ -108,10 +123,16 @@ export function MoedasPage() {
           alunoEmail: alunoSelecionado?.email || "não encontrado",
           professorEmail: professorSelecionado?.email || "não encontrado",
         });
-        alert("Moedas enviadas com sucesso! (Emails não enviados: informações de email não encontradas)");
+        showNotification(
+          "Moedas enviadas com sucesso! (Emails não enviados: informações de email não encontradas)",
+          "warning"
+        );
       }
     } catch (e: any) {
-      alert(e?.response?.data?.error || "Erro ao enviar moedas");
+      showNotification(
+        e?.response?.data?.error || "Erro ao enviar moedas",
+        "error"
+      );
     }
   };
 
@@ -133,9 +154,18 @@ export function MoedasPage() {
             type="text"
             value={envio.professorNome}
             readOnly
-            style={{ gridColumn: "1 / -1", background: "rgba(255,255,255,0.05)" }}
+            style={{
+              gridColumn: "1 / -1",
+              background: "rgba(255,255,255,0.05)",
+            }}
           />
-          <label style={{ gridColumn: "1 / -1", fontSize: "12px", color: "var(--muted)" }}>
+          <label
+            style={{
+              gridColumn: "1 / -1",
+              fontSize: "12px",
+              color: "var(--muted)",
+            }}
+          >
             Professor: {user?.nome}
           </label>
           <select

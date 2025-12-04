@@ -9,21 +9,40 @@ import { LoginPage } from "./pages/LoginPage";
 import { PerfilPage } from "./pages/PerfilPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./contexts/AuthContext";
+import { useNotification } from "./contexts/NotificationContext";
+import { ToastContainer } from "./components/Toast";
+import { ConfirmDialog } from "./components/ConfirmDialog";
 
 export default function App() {
   const { isAuthenticated, user, logout, hasRole } = useAuth();
+  const { notifications, removeNotification, confirmDialog } = useNotification();
 
   if (!isAuthenticated) {
     return (
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
+      <>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+        <ToastContainer notifications={notifications} onRemove={removeNotification} />
+        {confirmDialog && (
+          <ConfirmDialog
+            message={confirmDialog.message}
+            title={confirmDialog.title}
+            confirmText={confirmDialog.confirmText}
+            cancelText={confirmDialog.cancelText}
+            type={confirmDialog.type}
+            onConfirm={confirmDialog.onConfirm}
+            onCancel={confirmDialog.onCancel}
+          />
+        )}
+      </>
     );
   }
 
   return (
-    <div className="container">
+    <>
+      <div className="container">
       <header className="app-header">
         <div className="brand">
           <div className="logo" />
@@ -160,6 +179,19 @@ export default function App() {
           }
         />
       </Routes>
-    </div>
+      </div>
+      <ToastContainer notifications={notifications} onRemove={removeNotification} />
+      {confirmDialog && (
+        <ConfirmDialog
+          message={confirmDialog.message}
+          title={confirmDialog.title}
+          confirmText={confirmDialog.confirmText}
+          cancelText={confirmDialog.cancelText}
+          type={confirmDialog.type}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={confirmDialog.onCancel}
+        />
+      )}
+    </>
   );
 }

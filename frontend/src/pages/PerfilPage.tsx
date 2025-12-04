@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { useNotification } from "../contexts/NotificationContext";
 import {
   AlunosApi,
   Aluno,
@@ -16,6 +17,7 @@ import {
 
 export function PerfilPage() {
   const { user, hasRole } = useAuth();
+  const { showNotification } = useNotification();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [instituicoes, setInstituicoes] = useState<InstituicaoEnsino[]>([]);
@@ -95,9 +97,9 @@ export function PerfilPage() {
       }
       await AlunosApi.update(user.id, payload);
       await loadData();
-      alert("Perfil atualizado com sucesso!");
+      showNotification("Perfil atualizado com sucesso!", "success");
     } catch (e: any) {
-      alert(e?.response?.data?.error || "Erro ao atualizar perfil");
+      showNotification(e?.response?.data?.error || "Erro ao atualizar perfil", "error");
     }
   };
 
@@ -112,9 +114,9 @@ export function PerfilPage() {
       }
       await EmpresasApi.update(user.id, payload);
       await loadData();
-      alert("Perfil atualizado com sucesso!");
+      showNotification("Perfil atualizado com sucesso!", "success");
     } catch (e: any) {
-      alert(e?.response?.data?.error || "Erro ao atualizar perfil");
+      showNotification(e?.response?.data?.error || "Erro ao atualizar perfil", "error");
     }
   };
 
@@ -129,9 +131,9 @@ export function PerfilPage() {
       }
       await ProfessoresApi.update(user.id, payload);
       await loadData();
-      alert("Perfil atualizado com sucesso!");
+      showNotification("Perfil atualizado com sucesso!", "success");
     } catch (e: any) {
-      alert(e?.response?.data?.error || "Erro ao atualizar perfil");
+      showNotification(e?.response?.data?.error || "Erro ao atualizar perfil", "error");
     }
   };
 

@@ -6,8 +6,10 @@ import {
   InstituicoesApi,
   InstituicaoEnsino,
 } from "../api/client";
+import { useNotification } from "../contexts/NotificationContext";
 
 export function AlunosPage() {
+  const { showNotification, confirm } = useNotification();
   const [alunos, setAlunos] = useState<Aluno[]>([]);
   const [instituicoes, setInstituicoes] = useState<InstituicaoEnsino[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +70,7 @@ export function AlunosPage() {
       setEditingId(null);
       await load();
     } catch (e: any) {
-      alert(e?.response?.data?.error || "Erro ao salvar aluno");
+      showNotification(e?.response?.data?.error || "Erro ao salvar aluno", "error");
     }
   };
 
@@ -87,7 +89,15 @@ export function AlunosPage() {
   };
 
   const remove = async (id: number) => {
-    if (!confirm("Remover aluno?")) return;
+    const confirmed = await confirm("Remover aluno?", {
+      title: "Remover Aluno",
+      type: "danger",
+      confirmText: "Remover",
+      cancelText: "Cancelar",
+    });
+    
+    if (!confirmed) return;
+    
     await AlunosApi.remove(id);
     await load();
   };

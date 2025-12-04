@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { EmpresasApi, Empresa, EmpresaRequest } from "../api/client";
+import { useNotification } from "../contexts/NotificationContext";
 
 export function EmpresasPage() {
+  const { showNotification, confirm } = useNotification();
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +44,10 @@ export function EmpresasPage() {
       setEditingId(null);
       await load();
     } catch (e: any) {
-      alert(e?.response?.data?.error || "Erro ao salvar empresa");
+      showNotification(
+        e?.response?.data?.error || "Erro ao salvar empresa",
+        "error"
+      );
     }
   };
 
@@ -52,7 +57,15 @@ export function EmpresasPage() {
   };
 
   const remove = async (id: number) => {
-    if (!confirm("Remover empresa?")) return;
+    const confirmed = await confirm("Remover empresa?", {
+      title: "Remover Empresa",
+      type: "danger",
+      confirmText: "Remover",
+      cancelText: "Cancelar",
+    });
+
+    if (!confirmed) return;
+
     await EmpresasApi.remove(id);
     await load();
   };

@@ -8,9 +8,11 @@ import {
   Transacao,
 } from "../api/client";
 import { useAuth } from "../contexts/AuthContext";
+import { useNotification } from "../contexts/NotificationContext";
 
 export function ExtratosPage() {
   const { user, hasRole } = useAuth();
+  const { showNotification } = useNotification();
   const [alunos, setAlunos] = useState<Aluno[]>([]);
   const [professores, setProfessores] = useState<Professor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +73,7 @@ export function ExtratosPage() {
       setAlunoSelecionado(aluno);
       setExtratoAluno(itens);
     } catch (e: any) {
-      alert(e?.response?.data?.error || "Erro ao consultar extrato do aluno");
+      showNotification(e?.response?.data?.error || "Erro ao consultar extrato do aluno", "error");
     }
   };
 
@@ -91,8 +93,9 @@ export function ExtratosPage() {
       const itens = await MoedasApi.extratoProfessor(profSelecionadoNome);
       setExtratoProfessor(itens);
     } catch (e: any) {
-      alert(
-        e?.response?.data?.error || "Erro ao consultar extrato do professor"
+      showNotification(
+        e?.response?.data?.error || "Erro ao consultar extrato do professor",
+        "error"
       );
     }
   };
