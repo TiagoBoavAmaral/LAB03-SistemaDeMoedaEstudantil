@@ -5,7 +5,7 @@ Senha: 123456
 
 2. Professor
 Nome: João Silva
-Email: joao.silva@escola.edu OU joaosilva@email.com
+Email: joao.silva@escola.edu
 Senha: 123456
 
 
