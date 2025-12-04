@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { VantagensAdquiridasApi, VantagemAdquirida } from "../api/client";
 import { useNotification } from "../contexts/NotificationContext";
+import { QRCodeSVG } from "qrcode.react";
 
 export function VantagensAdquiridasPage() {
   const { user, hasRole } = useAuth();
@@ -52,10 +53,6 @@ export function VantagensAdquiridasPage() {
     }
   };
 
-  const copiarCodigo = (codigo: string) => {
-    navigator.clipboard.writeText(codigo);
-    showNotification("Código copiado para a área de transferência!", "success");
-  };
 
   if (!hasRole("ALUNO")) {
     return (
@@ -188,54 +185,43 @@ export function VantagensAdquiridasPage() {
                       fontSize: "12px",
                       color: "var(--muted)",
                       display: "block",
-                      marginBottom: "4px",
+                      marginBottom: "8px",
+                      textAlign: "center",
                     }}
                   >
-                    Código de Uso:
+                    Código QR para Resgate:
                   </label>
                   <div
                     style={{
                       display: "flex",
-                      gap: "8px",
+                      justifyContent: "center",
                       alignItems: "center",
+                      padding: "16px",
+                      background: "white",
+                      borderRadius: "8px",
+                      opacity: v.resgatado ? 0.5 : 1,
                     }}
                   >
-                    <code
+                    <QRCodeSVG
+                      value={v.codigoUso}
+                      size={200}
+                      level="H"
+                      includeMargin={true}
+                    />
+                  </div>
+                  {v.resgatado && (
+                    <p
                       style={{
-                        flex: 1,
-                        background: v.resgatado
-                          ? "rgba(255, 255, 255, 0.02)"
-                          : "rgba(255, 255, 255, 0.05)",
-                        padding: "8px",
-                        borderRadius: "6px",
-                        fontSize: "12px",
-                        fontFamily: "monospace",
-                        wordBreak: "break-all",
-                        border: "1px solid var(--border)",
-                        color: v.resgatado ? "var(--muted)" : "var(--text)",
-                        opacity: v.resgatado ? 0.5 : 1,
-                        textDecoration: v.resgatado ? "line-through" : "none",
+                        fontSize: "11px",
+                        color: "var(--muted)",
+                        textAlign: "center",
+                        marginTop: "8px",
+                        marginBottom: 0,
                       }}
                     >
-                      {v.codigoUso}
-                    </code>
-                    {!v.resgatado && (
-                      <button
-                        onClick={() => copiarCodigo(v.codigoUso)}
-                        style={{
-                          padding: "8px 12px",
-                          background: "var(--primary)",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "6px",
-                          cursor: "pointer",
-                          fontSize: "12px",
-                        }}
-                      >
-                        Copiar
-                      </button>
-                    )}
-                  </div>
+                      QR Code já utilizado
+                    </p>
+                  )}
                 </div>
                 {!v.resgatado && (
                   <button
