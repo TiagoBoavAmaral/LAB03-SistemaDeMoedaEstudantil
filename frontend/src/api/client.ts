@@ -1,7 +1,10 @@
 import axios from "axios";
 
+const baseURL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+console.log("API URL configured:", baseURL);
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
+  baseURL: baseURL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -116,7 +119,7 @@ export type EnvioMoedasRequest = {
   alunoId: number;
   valor: number;
   descricao: string;
-};
+  };
 
 export type Transacao = {
   id: number;
@@ -172,7 +175,7 @@ export type Vantagem = {
   imagemUrl?: string;
   empresaParceiraId: number;
   empresaParceiraNome: string;
-};
+  };
 
 export type VantagemRequest = {
   nome: string;
