@@ -10,6 +10,22 @@ O sistema foi implantado usando Render e Vercel e  está disponível para acesso
 
 > ### 🌐 **[https://sistema-moeda-estudantil.vercel.app/](https://sistema-moeda-estudantil.vercel.app/)**
 
+Credenciais de Teste Para Login:
+
+ 1. Empresa
+Nome: Tech Solutions Ltda
+Email: empresa@techsolutions.com
+Senha: 123456
+
+ 2. Professor
+Nome: João Silva
+Email: joao.silva@escola.edu
+Senha: 123456
+
+ 3. Aluno
+Nome: Tiago Santos
+Email: tiago.santos@aluno.edu
+Senha: 123456
 ---
 
 ## Alunos
